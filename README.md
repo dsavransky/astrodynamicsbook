@@ -1,8 +1,8 @@
 # The Astrodynamics Book
 
-More description coming as soon as I figure out what this is going to be.
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
-Shield: [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+More description coming as soon as I figure out what this is going to be.
 
 This work is licensed under a
 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
