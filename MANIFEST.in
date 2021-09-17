@@ -1,0 +1,6 @@
+include LICENSE README.md
+include astrodynamicsbook/latex_preamble.tex
+recursive-exclude tests *
+recursive-exclude documentation *
+exclude requirements.txt .gitignore .travis.yml .coveragerc 
+
