@@ -32,7 +32,8 @@ setuptools.setup(
           'scipy',
           'numpy',
           'astropy',
-          'sympy'
+          'sympy',
+          'notebook'
     ],
     license="CC BY-NC-SA 4.0",
     classifiers=[
