@@ -1,6 +1,6 @@
 # The Astrodynamics Book
 
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa] [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dsavransky/astrodynamicsbook/HEAD)
 
 More description coming as soon as I figure out what this is going to be.
 
