@@ -1,7 +1,7 @@
 from IPython.display import display, Markdown
 import pkg_resources
 import sympy
-from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect
+from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect, expand
 
 
 def loadLatexPreamble():
@@ -66,3 +66,36 @@ def skew(v):
     ) and len(v) == 3, "v must be an iterable of length 3."
 
     return Matrix([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+
+def fancyMat(prefix,shape):
+    """ Create an indexed matrix using the given prefix
+    Simillar to symarray, but indexing is 1-based and the matrix must be 2D
+
+    Args:
+        prefix (str):
+            Name of each matrix element
+        shape (iterable of length 2):
+            Number of matrix rows and columns.
+
+    Returns:
+        sympy.Matrix:
+            The resulting (3x3) matrix.
+
+
+    Notes:
+        Indexing is 1-based.
+
+
+    Example:
+        fancyMat('{}^\mathcal{B}C^{\mathcal{A}}',(3,3))
+    """
+
+    M = []
+    for r in range(1, shape[0]+1):
+        row = []
+        for c in range(1, shape[1]+1):
+            row.append(prefix+'_{'+str(r)+str(c)+'}')
+        M.append(row)
+    M = Matrix(symbols(M))
+
+    return M
