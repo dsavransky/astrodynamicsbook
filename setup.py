@@ -33,7 +33,8 @@ setuptools.setup(
           'numpy',
           'astropy',
           'sympy',
-          'notebook'
+          'notebook',
+          'matplotlib'
     ],
     license="CC BY-NC-SA 4.0",
     classifiers=[
