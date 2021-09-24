@@ -4,7 +4,7 @@
 
 More description coming as soon as I figure out what this is going to be.  
 
-For now, click the Binder badge above this line and wait a few minutes.  Once JupyterLab launches, click on the file browser (top icon in the left-hand panel) and select a notebook (I'd recommend starting from 01-Introduction.ipynb.  Give it a few seconds to render and then tell me what you think.
+For now, click the Binder badge above this line and wait a few minutes.  Once JupyterLab launches, click on the file browser (top icon in the left-hand panel) and select a notebook (I'd recommend starting from 01-Introduction.ipynb).  Give it a few seconds to render and then tell me what you think.
 
 This work is licensed under a
 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
