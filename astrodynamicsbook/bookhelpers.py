@@ -2,15 +2,38 @@ from IPython.display import display, Markdown
 import pkg_resources
 import sympy
 from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect, expand
+import ipynbname
+import re
+import os
+import glob
 
+#to be removed:
+import warnings
+from matplotlib import MatplotlibDeprecationWarning
 
 def loadLatexPreamble():
+    """ Load LaTeX definitions for future use"""
+
+    #this is temporary and will be removed once ipython fixes the upstream bug
+    warnings.filterwarnings('ignore', category=MatplotlibDeprecationWarning)
+    init_printing()
+
     latexPreambleFilepath = pkg_resources.resource_filename(
         "astrodynamicsbook", "latex_preamble.tex"
     )
     with open(latexPreambleFilepath, "r") as f:
         txt = f.read()
     display(Markdown(txt))
+
+def genNextLink():
+    """ Find next chapter (if it exists) and insert markdown link """
+    currpath = ipynbname.path()
+    tmp = os.path.split(currpath)
+    currnum = int(re.match('(\d+)-[\s\S]+',tmp[1]).group(1))
+    nextnum = currnum + 1
+    nextfile = glob.glob(os.path.join(tmp[0],f'{nextnum:02}'+'*'))
+    if nextfile:
+        display(Markdown(r"[Next](<{}>)".format(os.path.split(nextfile[0])[1]) ))
 
 
 def mat2vec(mat, basis="e"):
@@ -62,7 +85,7 @@ def skew(v):
     """
 
     assert (
-        hasattr(v, "__iter__") or isinstance(v, Matrix) or isinstance(v, MatrixBase)
+        hasattr(v, "__iter__") or isinstance(v, Matrix) or isinstance(v, sympy.MatrixBase)
     ) and len(v) == 3, "v must be an iterable of length 3."
 
     return Matrix([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
