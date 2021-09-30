@@ -1,7 +1,7 @@
 from IPython.display import display, Markdown
 import pkg_resources
 import sympy
-from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect, expand
+from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect, expand, cos, sin, eye, pi
 import ipynbname
 import re
 import os
