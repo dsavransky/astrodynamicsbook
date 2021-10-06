@@ -154,3 +154,29 @@ def fancyMat(prefix, shape):
     M = Matrix(symbols(M))
 
     return M
+
+def rotMat(axis,angle):
+    """ Returns the DCM ({}^B C^A) for a frame rotation of angle about
+    the specified axis
+
+    Args:
+        axis (int):
+            Axis to rotate about (1, 2, or 3)
+        angle (float or sympy.Symbol):
+            Angle of rotation
+
+    Returns:
+        sympy.Matrix:
+            The resulting (3x3) matrix.
+
+
+    """
+    if axis == 1:
+        return Matrix(([1,0,0],[0,cos(angle),sin(angle)],[0,-sin(angle),cos(angle)]))
+    elif axis == 2:
+        return Matrix(([cos(angle),0,-sin(angle)],[0,1,0],[sin(angle), 0, cos(angle)]))
+    elif axis == 3:
+        return Matrix(([cos(angle),sin(angle),0],[-sin(angle),cos(angle),0],[0,0,1]))
+    else:
+        return -1
+
