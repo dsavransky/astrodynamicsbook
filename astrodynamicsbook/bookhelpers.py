@@ -1,7 +1,8 @@
 from IPython.display import display, Markdown
 import pkg_resources
 import sympy
-from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect, expand, cos, sin, eye, pi
+from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect, expand, cos,\
+    sin, eye, pi, Function, diff, Derivative
 import ipynbname
 import re
 import os
@@ -179,4 +180,66 @@ def rotMat(axis,angle):
         return Matrix(([cos(angle),sin(angle),0],[-sin(angle),cos(angle),0],[0,0,1]))
     else:
         return -1
+
+
+def difftotal(expr, diffby, diffmap):
+    """Take the total derivative with respect to a variable.
+
+    Args:
+        expr (sympy.core.*):
+            The expression to differentiate
+        diffby (symbol):
+            The variable to differentiate with respect to
+        diffmap (dict):
+            Dictionary of variable derivatives of the form {var:deriv,...}
+
+    Returns:
+        sympy.core.*:
+            The resulting derivative expression
+
+    Example:
+
+        theta, t, theta_dot = symbols("theta t theta_dot")
+        difftotal(cos(theta), t, {theta: theta_dot})
+        >> -theta_dot*sin(theta)
+
+    Notes:
+        Based almost entirely on the original code by  by Chris Wagner at:
+        http://robotfantastic.org/total-derivatives-in-sympy.html
+
+    """
+    # Replace all symbols in the diffmap by a functional form
+    fnexpr = expr.subs({s:Function(str(s))(diffby) for s in diffmap})
+    # Do the differentiation
+    diffexpr = diff(fnexpr, diffby)
+    # Replace the Derivatives with the variables in diffmap
+    derivmap = {Derivative(Function(str(v))(diffby), diffby):dv
+                for v,dv in diffmap.items()}
+    finaldiff = diffexpr.subs(derivmap)
+    # Replace the functional forms with their original form
+    return finaldiff.subs({Function(str(s))(diffby):s for s in diffmap})
+
+
+def difftotalmat(mat,diffby,diffmap):
+    """Take the total derivative with respect to a variable of a matrix.
+
+    Args:
+        mat (sympy.Matrix):
+            The matrix to differentiate
+        diffby (symbol):
+            The variable to differentiate with respect to
+        diffmap (dict):
+            Dictionary of variable derivatives of the form {var:deriv,...}
+
+    Returns:
+        sympy.Matrix:
+            The resulting derivative expression
+
+    Notes:
+        Applies method diftotal element by element to the input matrix.
+
+    """
+
+    return Matrix([difftotal(x,diffby,diffmap) for x in mat]).reshape(*mat.shape)
+
 
