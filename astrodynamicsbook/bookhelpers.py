@@ -7,7 +7,6 @@ import ipynbname
 import re
 import os
 import glob
-
 import matplotlib.pyplot as plt
 import numpy as np
 
