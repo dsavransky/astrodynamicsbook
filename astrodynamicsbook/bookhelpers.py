@@ -1,8 +1,26 @@
 from IPython.display import display, Markdown
 import pkg_resources
 import sympy
-from sympy import symbols, Matrix, init_printing, sqrt, simplify, collect, expand, cos,\
-    sin, eye, pi, Function, diff, Derivative
+from sympy import (
+    symbols,
+    Matrix,
+    init_printing,
+    sqrt,
+    simplify,
+    collect,
+    expand,
+    cos,
+    sin,
+    tan,
+    eye,
+    pi,
+    Function,
+    diff,
+    Derivative,
+    cosh,
+    sinh,
+    tanh,
+)
 import ipynbname
 import re
 import os
@@ -86,8 +104,9 @@ def mat2vec(mat, basis="e"):
 
     return collect(vec, basissyms)
 
+
 def genRefFrame(basis):
-    """ Generate symbols corresponding to unit vectors of a reference frame
+    """Generate symbols corresponding to unit vectors of a reference frame
 
     Args:
         basis (str)
@@ -102,6 +121,7 @@ def genRefFrame(basis):
 
     basis = [r"\mathbf{\hat{" + basis + "}}_" + str(j) for j in range(1, 4)]
     return symbols(basis)
+
 
 def skew(v):
     """Skew-symmetric (cross-produce equivalent) matrix of a geometric vector
@@ -158,8 +178,9 @@ def fancyMat(prefix, shape):
 
     return M
 
-def rotMat(axis,angle):
-    """ Returns the DCM ({}^B C^A) for a frame rotation of angle about
+
+def rotMat(axis, angle):
+    """Returns the DCM ({}^B C^A) for a frame rotation of angle about
     the specified axis
 
     Args:
@@ -172,16 +193,45 @@ def rotMat(axis,angle):
         sympy.Matrix:
             The resulting (3x3) matrix.
 
-
     """
     if axis == 1:
-        return Matrix(([1,0,0],[0,cos(angle),sin(angle)],[0,-sin(angle),cos(angle)]))
+        return Matrix(
+            ([1, 0, 0], [0, cos(angle), sin(angle)], [0, -sin(angle), cos(angle)])
+        )
     elif axis == 2:
-        return Matrix(([cos(angle),0,-sin(angle)],[0,1,0],[sin(angle), 0, cos(angle)]))
+        return Matrix(
+            ([cos(angle), 0, -sin(angle)], [0, 1, 0], [sin(angle), 0, cos(angle)])
+        )
     elif axis == 3:
-        return Matrix(([cos(angle),sin(angle),0],[-sin(angle),cos(angle),0],[0,0,1]))
+        return Matrix(
+            ([cos(angle), sin(angle), 0], [-sin(angle), cos(angle), 0], [0, 0, 1])
+        )
     else:
         return -1
+
+
+def rodriguesEq(nhat, th):
+    """Returns the DCM ({}^B C^A) for a frame rotation of angle th about
+    the axis nhat
+
+    Args:
+        nhat (sympy.Matrix):
+            Axis of rotation in components of either frame (3x1)
+        angle (float or sympy.Symbol):
+            Angle of rotation
+
+    Returns:
+        sympy.Matrix:
+            The resulting (3x3) matrix.
+    """
+
+    bCa = simplify(
+        cos(th) * eye(3)
+        + (1 - cos(th)) * nhat * nhat.transpose()
+        - sin(th) * skew(nhat)
+    )
+
+    return bCa
 
 
 def difftotal(expr, diffby, diffmap):
@@ -211,18 +261,19 @@ def difftotal(expr, diffby, diffmap):
 
     """
     # Replace all symbols in the diffmap by a functional form
-    fnexpr = expr.subs({s:Function(str(s))(diffby) for s in diffmap})
+    fnexpr = expr.subs({s: Function(str(s))(diffby) for s in diffmap})
     # Do the differentiation
     diffexpr = diff(fnexpr, diffby)
     # Replace the Derivatives with the variables in diffmap
-    derivmap = {Derivative(Function(str(v))(diffby), diffby):dv
-                for v,dv in diffmap.items()}
+    derivmap = {
+        Derivative(Function(str(v))(diffby), diffby): dv for v, dv in diffmap.items()
+    }
     finaldiff = diffexpr.subs(derivmap)
     # Replace the functional forms with their original form
-    return finaldiff.subs({Function(str(s))(diffby):s for s in diffmap})
+    return finaldiff.subs({Function(str(s))(diffby): s for s in diffmap})
 
 
-def difftotalmat(mat,diffby,diffmap):
+def difftotalmat(mat, diffby, diffmap):
     """Take the total derivative with respect to a variable of a matrix.
 
     Args:
@@ -242,6 +293,4 @@ def difftotalmat(mat,diffby,diffmap):
 
     """
 
-    return Matrix([difftotal(x,diffby,diffmap) for x in mat]).reshape(*mat.shape)
-
-
+    return Matrix([difftotal(x, diffby, diffmap) for x in mat]).reshape(*mat.shape)
