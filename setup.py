@@ -35,7 +35,9 @@ setuptools.setup(
           'sympy',
           'notebook',
           'matplotlib',
-          'ipynbname'
+          'ipynbname',
+          'ipympl',
+          'tqdm'
     ],
     license="CC BY-NC-SA 4.0",
     classifiers=[
