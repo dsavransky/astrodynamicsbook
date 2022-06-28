@@ -37,7 +37,8 @@ The book is composed of a python backend and a Jupyter notebook frontend (the te
 
 7. To stop JupyterLab, type ctrl+c in the terminal where it is running and then hit ctrl+c again (or type `y` at the prompt). To deactivate the virtual environment just type `deactivate` at the prompt.  Next time you want to run the book, you just activate the environment again, navigate to the Notebooks directory and run `jupyter-lab`
 
-There appears to be an issue (at least on macOS) where if you already have jupyter-lab installed in a system path, it will be executed initially instead of the one you install in your virtual environment.  A simple fix is to simply deactivate and re-activate the virtual environment after you run the initial pip installation.
+>**Warning**
+>There appears to be an issue (at least on macOS) where if you already have jupyter-lab installed in a system path, it will be executed initially instead of the one you install in your virtual environment.  A simple fix is to simply deactivate and re-activate the virtual environment after you run the initial pip installation.
 
 ## Feedback
 
