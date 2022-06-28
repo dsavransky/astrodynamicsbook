@@ -34,6 +34,7 @@ setuptools.setup(
           'astropy',
           'sympy',
           'notebook',
+          'jupyterlab',
           'matplotlib',
           'ipynbname',
           'ipympl',
