@@ -453,3 +453,43 @@ def orbstate2kepler(r, v, mu):
     tp[pinds] = -(E[pinds] + E[pinds] ** 3 / 3) / n[pinds]
 
     return a, e, O, I, w, tp
+
+
+def c2c3(psi):
+    """Calculate the c2, c3 coefficients for the universal variable
+
+    Args:
+        psi (iterable or float):
+            psi = chi^2/a for universal variable chi and semi-major axis a
+
+    Returns:
+        tuple:
+            c2 (numpy.ndarray):
+                c2 coefficients (same size as input)
+            c3 (numpy.ndarray):
+                c3 coefficients (same size as input)
+    """
+
+    # force input into 1D ndarray
+    psi = np.array(psi, ndmin=1).astype(float).flatten()
+    c2 = np.zeros(psi.size)
+    c3 = np.zeros(psi.size)
+
+    zeropsi = psi == 0
+    pospsi = psi > 0
+    negpsi = psi < 0
+
+    c2[zeropsi] = 1 / 2
+    c3[zeropsi] = 1 / 6
+
+    c2[pospsi] = (1 - np.cos(np.sqrt(psi[pospsi]))) / psi[pospsi]
+    c3[pospsi] = (np.sqrt(psi[pospsi]) - np.sin(np.sqrt(psi[pospsi]))) / np.sqrt(
+        psi[pospsi] ** 3
+    )
+
+    c2[negpsi] = (1 - np.cosh(np.sqrt(-psi[negpsi]))) / psi[negpsi]
+    c3[negpsi] = (np.sinh(np.sqrt(-psi[negpsi])) - np.sqrt(-psi[negpsi])) / np.sqrt(
+        -psi[negpsi] ** 3
+    )
+
+    return c2, c3
