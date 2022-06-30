@@ -1,5 +1,89 @@
 import numpy as np
 import warnings
+from typing import Union, Any
+import numpy.typing as npt
+
+floatORarray = Union[float, np.ndarray]
+
+def forcendarray(x: floatORarray) -> npt.NDArray[Any]:
+    """Convert any numerical value into 1-D ndarray
+
+    Args:
+        x (float or numpy.ndarray):
+            Input
+    Returns:
+        numpy.ndarray:
+            Same size as input but in ndarray form
+    """
+
+    return np.array(x, ndmin=1).astype(float).flatten()
+
+
+def validateOrbitalStateInputs(r: np.ndarray, v: np.ndarray, mu: floatORarray) -> tuple:
+    """Validate and standardize dimensionality of orbital state vector inputs
+
+    Args:
+        r (numpy.ndarray):
+            Components of orbital radius. 3n elements in 1D as
+            [r1(1);r1(2);r1(3);r2(1);r2(2)r2(3);...;rn(1);rn(2);rn(3)]
+            or in 2D as nx3 or 3xn
+        v (numpy.ndarray):
+            Components of orbital velocity. Same stacking as r
+        mu (float or numpy.ndarray):
+            Gravitational parameters.  If float, assuming all state vectors belong to
+            the same system.
+
+    Returns:
+        tuple:
+        r (numpy.ndarray):
+            Components of orbital radius. (n x 3)
+        v (numpy.ndarray):
+            Components of orbital velocity. (n x 3)
+        mu (numpy.ndarray):
+            Gravitational parameters.  (size 1 or n)
+    """
+    # figure out dimensionality of inputs
+    assert len(r.shape) <= 3, "r input must have max dimension 2"
+    if (len(r.shape) == 1) or (1 in r.shape):
+        r = r.flatten().reshape(r.size // 3, 3)
+    else:
+        assert 3 in r.shape, "If r is 2D, one dimension must be length 3"
+        if r.shape[0] == 3:
+            r = r.transpose()
+
+    assert len(v.shape) <= 3, "v input must have max dimension 2"
+    if (len(v.shape) == 1) or (1 in v.shape):
+        v = v.flatten().reshape(v.size // 3, 3)
+    else:
+        assert 3 in v.shape, "If v is 2D, one dimension must be length 3"
+        if v.shape[0] == 3:
+            v = v.transpose()
+
+    mu = forcendarray(mu)
+
+    assert len(r) == len(v), "r and v must have same sizes."
+    assert mu.size == 1 or mu.size == len(
+        r
+    ), "mu must be scalar or same length as r and v"
+
+    return r, v, mu
+
+
+def unitvector(vec, mag):
+    """Return the unit vectors of an array of vectors
+
+    Args:
+        vec(numpy.ndarray):
+            Vectors as nx3
+        mag (numpy.ndarray):
+            Vector magnitudes as nx1
+
+    Returns:
+        numpy.ndarray:
+            Unit vectors in the same layout as input
+    """
+
+    return vec / np.tile(mag, (3, 1)).transpose()
 
 
 def invKepler(
@@ -53,8 +137,8 @@ def invKepler(
 
     # make sure M and e are of the correct format.
     # if either is scalar, expand to match sizes
-    M = np.array(M, ndmin=1).astype(float).flatten()
-    e = np.array(e, ndmin=1).astype(float).flatten()
+    M = forcendarray(M)
+    e = forcendarray(e)
     if e.size != M.size:
         if e.size == 1:
             e = np.array([e[0]] * len(M))
@@ -193,37 +277,6 @@ def invKepler(
     return out
 
 
-def forcendarray(x):
-    """Convert any numerical value into 1-D ndarray
-
-    Args:
-        x (float or numpy.ndarray):
-            Input
-    Returns:
-        numpy.ndarray:
-            Same size as input but in ndarray form
-    """
-
-    return np.array(x, ndmin=1).astype(float).flatten()
-
-
-def unitvector(vec, mag):
-    """Return the unit vectors of an array of vectors
-
-    Args:
-        vec(numpy.ndarray):
-            Vectors as nx3
-        mag (numpy.ndarray):
-            Vector magnitudes as nx1
-
-    Returns:
-        numpy.ndarray:
-            Unit vectors in the same layout as input
-    """
-
-    return vec / np.tile(mag, (3, 1)).transpose()
-
-
 def kepler2orbstate(a, e, O, I, w, mu, nu):
     """Calculate orbital state vectors from Keplerian elements
 
@@ -338,25 +391,7 @@ def orbstate2kepler(r, v, mu):
             tp (float):
                 time of periapsis passage
     """
-
-    # figure out dimensionality of inputs
-    assert len(r.shape) <= 3, "r input must have max dimension 2"
-    if (len(r.shape) == 1) or (1 in r.shape):
-        r = r.flatten().reshape(r.size // 3, 3)
-    else:
-        assert 3 in r.shape, "If r is 2D, one dimension must be length 3"
-        if r.shape[0] == 3:
-            r = r.transpose()
-
-    assert len(v.shape) <= 3, "v input must have max dimension 2"
-    if (len(v.shape) == 1) or (1 in v.shape):
-        v = v.flatten().reshape(v.size // 3, 3)
-    else:
-        assert 3 in v.shape, "If v is 2D, one dimension must be length 3"
-        if v.shape[0] == 3:
-            v = v.transpose()
-
-    assert len(r) == len(v), "r and v must have same sizes."
+    r, v, mu = validateOrbitalStateInputs(r, v, mu)
 
     v2 = np.sum(v * v, axis=1)  # velocity magnitude squared
     rmag = np.sqrt(np.sum(r * r, axis=1))  # orbital radius magnitude
@@ -493,3 +528,40 @@ def c2c3(psi):
     )
 
     return c2, c3
+
+
+def universalfg(r0, v0, mu, dt):
+    """Propagate orbital state vectors by delta t via universal variable-based f and g
+
+    Args:
+        r0 (numpy.ndarray):
+            Components of orbital radius. 3n elements in 1D as
+            [r1(1);r1(2);r1(3);r2(1);r2(2)r2(3);...;rn(1);rn(2);rn(3)]
+            or in 2D as nx3 or 3xn
+        v0 (numpy.ndarray):
+            Components of orbital velocity. Same stacking as r
+        mu (float or numpy.ndarray):
+            Gravitational parameters.  If float, assuming all state vectors belong to
+            the same system.
+        dt (float or numpy.ndarray):
+            Propagation time.  If float, assuming all states are propagated for the same
+            time
+
+    Returns:
+        tuple:
+            r (numpy.ndarray):
+                Components of orbital radius (n x 3)
+            v (numpy.ndarray):
+                Components of orbital velocity (n x 3)
+
+    Notes:
+        r.flatten() and v.flatten() will automatically stack elements in the proper
+        order in a 1D array
+
+    """
+
+    r0, v0, mu = validateOrbitalStateInputs(r0, v0, mu)
+    dt = forcendarray(dt)
+    assert dt.size == 1 or dt.size == len(
+        r0
+    ), "dt must be scalar or same size as r0 and v0"
