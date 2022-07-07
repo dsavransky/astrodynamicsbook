@@ -530,7 +530,7 @@ def c2c3(psi):
     return c2, c3
 
 
-def universalfg(r0, v0, mu, dt):
+def universalfg(r0, v0, mu, dt, maxIter=100):
     """Propagate orbital state vectors by delta t via universal variable-based f and g
 
     Args:
@@ -565,3 +565,101 @@ def universalfg(r0, v0, mu, dt):
     assert dt.size == 1 or dt.size == len(
         r0
     ), "dt must be scalar or same size as r0 and v0"
+
+    r0mag = np.sqrt(np.sum(r0 * r0, axis=1))  # orbital radius magnitude
+    v02 = np.sum(v0 * v0, axis=1)             # velocity magnitude squared
+    r0dotv0 = np.sum(r0 * v0, axis=1)         # r_0 \cdot v_0
+    alpha = -v02/mu + 2/r0mag                 # 1/a
+    fac0 = r0dotv0/np.sqrt(mu)                # r_0 \cdot v_0 / \sqrt{mu}
+    #h = np.cross(r0, v0)                      # specific angular momentum vector
+    #h2 = np.sum(h * h, axis=1)                #                  magnitude squared
+    #ell = h2/mu                               # semi-parameter
+
+    epsval = 100*np.spacing(1)
+    eorbs = alpha >= epsval
+    porbs = np.abs(alpha) < epsval
+    horbs = alpha <= -epsval
+
+    # utility subfunction to grab desired mu and dt values
+    def filtermudt(mu, dt, inds):
+        if mu.size == 1:
+            fmu = mu
+        else:
+            fmu = mu[inds]
+
+        if dt.size == 1:
+            fdt = dt
+        else:
+            fdt = dt[inds]
+
+        return fmu, fdt
+
+    chi = np.zeros(len(r0))
+    if np.any(eorbs):
+        emu, edt = filtermudt(mu, dt, eorbs)
+        chi[eorbs] = np.sqrt(emu)*edt*alpha[eorbs]
+
+    if np.any(porbs):
+        alpha[porbs] = 0
+        pmu, pdt = filtermudt(mu, dt, porbs)
+
+        a1 = 1/6
+        b1 = fac0[porbs]/2
+        c1 = r0mag[porbs]
+        d1 = -np.sqrt(pmu)*pdt
+        k0 = b1**2 - 3*a1*c1
+        k1 = 2*b1**3 - 9*a1*b1*c1 + 27*a1**2*d1
+        k2 = np.cbrt((k1 + np.sqrt(k1**2 - 4*k0**3))/2)
+        chi[porbs] = -(b1+k2+k0/k2)/3/a1
+
+    if np.any(horbs):
+        hmu, hdt = filtermudt(mu, dt, horbs)
+        chi[horbs] =  np.sign(hdt) * np.sqrt(-1.0/alpha[horbs]) * np.log(-2*hmu * alpha[horbs]*hdt
+                / ( r0dotv0[horbs] + np.sign(hdt)* np.sqrt(-hmu/alpha[horbs]) * (1.0 - r0mag[horbs] * alpha[horbs]) ) )
+
+    # loop
+    counter = np.zeros(len(r0))
+    r = r0mag
+    chiup = np.ones(len(r0))
+    currtol = np.spacing(np.max(np.abs(np.vstack((chi, r))),axis=0))
+    inds = np.abs(chiup) > currtol
+
+    while np.any(inds) and (counter < maxIter):
+        psi = chi[inds]**2.0 * alpha[inds]
+        c2, c3 = c2c3(psi)
+        r[inds] = chi[inds]**2.0 * c2 + fac0[inds] * chi * (1 - psi * c3) + r0mag[inds] * (1 - psi * c2)
+
+        nmu, ndt = filtermudt(mu, dt, inds)
+
+        chiup[inds] = (np.sqrt(nmu) * ndt - chi[inds]**3.0 * c3 - fac0[inds]*chi**2 * c2 - r0mag[inds] * chi * (1 - psi * c3)) / r[inds]
+        chi += chiup
+
+        currtol[inds] = np.spacing(np.max(np.abs(np.vstack((chi, r))), axis=0))
+        counter[inds] += 1
+        inds = np.abs(chiup) > currtol
+
+    if counter == maxIter:
+        raise ValueError(
+            "Failed to converge on xi: %e/%e"
+            % (
+                np.max(np.abs(xiup)),
+                epsmult * np.spacing(np.max(np.abs(np.hstack((xi, r))))),
+            )
+        )
+
+    # kepler solution
+    f = 1.0 - xi ** 2.0 / r0norm * c2
+    g = dt - xi ** 3.0 / np.sqrt(mu) * c3
+    F = np.sqrt(mu) / r / r0norm * xi * (ps * c3 - 1.0)
+    G = 1.0 - xi ** 2.0 / r * c2
+
+    Phi = np.zeros([6 * nplanets] * 2)
+    for j in np.arange(nplanets):
+        st = j * 6
+        Phi[st : st + 6, st : st + 6] = np.vstack(
+            (
+                np.hstack((np.eye(3) * f[j], np.eye(3) * g[j])),
+                np.hstack((np.eye(3) * F[j], np.eye(3) * G[j])),
+            )
+        )
+
