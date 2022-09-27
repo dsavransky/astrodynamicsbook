@@ -38,7 +38,8 @@ setuptools.setup(
           'matplotlib',
           'ipynbname',
           'ipympl',
-          'tqdm'
+          'tqdm',
+          'keplertools',
     ],
     license="CC BY-NC-SA 4.0",
     classifiers=[
