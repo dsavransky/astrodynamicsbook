@@ -1,0 +1,10 @@
+scipy
+numpy
+astropy
+notebook
+jupyterlab
+matplotlib
+ipynbname
+ipympl
+tqdm
+keplertools
