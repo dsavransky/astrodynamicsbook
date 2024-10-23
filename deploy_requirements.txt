@@ -1,0 +1,5 @@
+-r requirements.txt
+
+jupyterlite-core
+jupyterlite-pyodide-kernel
+jupyterlite-javascript-kernel
