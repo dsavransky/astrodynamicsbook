@@ -1,5 +1,5 @@
 from IPython.display import display, Markdown
-import pkg_resources
+import importlib.resources
 import sympy
 from sympy import (
     symbols,
@@ -40,8 +40,8 @@ def loadLatexPreamble():
     warnings.filterwarnings("ignore", category=MatplotlibDeprecationWarning)
     init_printing()
 
-    latexPreambleFilepath = pkg_resources.resource_filename(
-        "astrodynamicsbook", "latex_preamble.tex"
+    latexPreambleFilepath = os.path.join(
+        importlib.resources.files("astrodynamicsbook"), "latex_preamble.tex"
     )
     with open(latexPreambleFilepath, "r") as f:
         txt = f.read()
@@ -71,7 +71,7 @@ def genPrevLink():
 
 
 def mat2vec(mat, basis="e"):
-    """Transform matrix representation of a vector to the vector equation
+    r"""Transform matrix representation of a vector to the vector equation
     for a given basis.
 
     Args:
@@ -106,7 +106,7 @@ def mat2vec(mat, basis="e"):
 
 
 def genRefFrame(basis):
-    """Generate symbols corresponding to unit vectors of a reference frame
+    r"""Generate symbols corresponding to unit vectors of a reference frame
 
     Args:
         basis (str)
@@ -146,7 +146,7 @@ def skew(v):
 
 
 def fancyMat(prefix, shape):
-    """Create an indexed matrix using the given prefix
+    r"""Create an indexed matrix using the given prefix
     Simillar to symarray, but indexing is 1-based and the matrix must be 2D
 
     Args:
