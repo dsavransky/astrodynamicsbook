@@ -32,7 +32,7 @@ def main():
                 break
         if prevcell is not None:
             prevcell.source = (
-                "Do NOT run this cell in jupyterlite - it will produce an error.\n"
+                "# Do NOT run this cell in jupyterlite - it will produce an error.\n"
                 f"{prevcell.source}"
             )
 
@@ -44,7 +44,7 @@ def main():
                 break
         if nextcell is not None:
             nextcell.source = (
-                "Do NOT run this cell in jupyterlite - it will produce an error.\n"
+                "# Do NOT run this cell in jupyterlite - it will produce an error.\n"
                 f"{nextcell.source}"
             )
 
