@@ -9,22 +9,46 @@ def main():
 
     newtxt = (
         "# This preamble must be executed when running in jupyterlite \n"
-        "from IPython.display import display, Markdown\n"
-        "import importlib.resources\nimport sympy\n"
-        "from sympy import (\n    symbols,\n    Matrix,\n    init_printing,\n"
-        "sqrt,\n    simplify,\n    collect,\n    expand,\n    cos,\n    sin,\n"
-        "tan,\n    eye,\n    pi,\n    Function,\n    diff,\n    Derivative,\n"
-        "cosh,\n    sinh,\n    tanh,\n)\nimport re\nimport os\n"
-        "import glob\nimport matplotlib.pyplot as plt\n"
-        "import numpy as np\nimport piplite\n"
-        'await piplite.install(["ipynbname", "jupyter_core"])\nimport ipynbname'
+        "import IPython.display\nimport importlib.resources\nimport sympy\n"
+        "import re\nimport os\nimport glob\nimport matplotlib.pyplot \nimport numpy"
     )
 
     newcell = nbf.v4.new_code_cell(source=newtxt)
 
     for nb in nbs:
+        # grab notebook
+        if nb.startswith("Notebooks/00"):
+            continue
         ntbk = nbf.read(nb, nbf.NO_CONVERT)
+
+        # insert new cell at very top
         ntbk.cells.insert(0, newcell)
+
+        # find cell with genPrevLink
+        prevcell = None
+        for c in ntbk.cells:
+            if "genPrevLink()" in c.source:
+                prevcell = c
+                break
+        if prevcell is not None:
+            prevcell.source = (
+                "Do NOT run this cell in jupyterlite - it will produce an error.\n"
+                f"{prevcell.source}"
+            )
+
+        # find cell with genNextLink
+        nextcell = None
+        for c in ntbk.cells:
+            if "genNextLink()" in c.source:
+                nextcell = c
+                break
+        if nextcell is not None:
+            nextcell.source = (
+                "Do NOT run this cell in jupyterlite - it will produce an error.\n"
+                f"{nextcell.source}"
+            )
+
+        # write output
         nbf.write(ntbk, nb)
 
 

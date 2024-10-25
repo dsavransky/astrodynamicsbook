@@ -21,23 +21,22 @@ from sympy import (
     sinh,
     tanh,
 )
-import ipynbname
 import re
 import os
 import glob
 import matplotlib.pyplot as plt
 import numpy as np
-
-# to be removed:
-import warnings
-from matplotlib import MatplotlibDeprecationWarning
+# ipynbname won't work on jupyterlite anyway, so won't bother installing it
+try:
+    import ipynbname
+except ModuleNotFoundError:
+    pass
 
 
 def loadLatexPreamble():
     """Load LaTeX definitions for future use"""
 
     # this is temporary and will be removed once ipython fixes the upstream bug
-    warnings.filterwarnings("ignore", category=MatplotlibDeprecationWarning)
     init_printing()
 
     latexPreambleFilepath = os.path.join(
