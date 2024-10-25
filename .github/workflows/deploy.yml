@@ -19,6 +19,9 @@ jobs:
         run: |
           python -m pip install -r deploy_requirements.txt
           python -m pip install .
+      - name: Patch all notebooks with top-level imports
+        run: |
+          python patch_notebooks_for_jupyterlite.py
       - name: Build the JupyterLite site
         run: |
           cp -a astrodynamicsbook Notebooks
