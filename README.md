@@ -1,16 +1,24 @@
 # The Astrodynamics Book
 
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa] [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dsavransky/astrodynamicsbook/HEAD?urlpath=lab/tree/Notebooks)
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa] [![lite-badge]][lite] [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dsavransky/astrodynamicsbook/HEAD?urlpath=lab/tree/Notebooks)
+
+[lite-badge]: https://jupyterlite.rtfd.io/en/latest/_static/badge.svg
+[lite]: https://dsavransky.github.io/astrodynamicsbook
 
 More description coming as soon as I figure out what this is going to be.  
 
 ## Reading the Book
 
-This book is intended to be actively interacted with, and so requires a bit of setup.  You can avoid doing anything by accessing the book via mybinder (recommended), or you can go the hard route and install it locally.
+This book is intended to be actively interacted with, and so requires a bit of setup.  You can avoid doing anything by accessing the book via either the jupyterlite website or mybinder (recommended), or you can go the hard route and install it locally.  Regardless of which method you go with, you will be presented with a Jupyter-like interface, with a list of ipynb files in the left-hand pane (if you don't see the list of files, try toggling the file browser view by clicking the folder icon on the left of the screen).  You can open any file, but starting with 01-Introduction.ipynb probably makes the most sense. 
+
+### The Easiest Way
+You can access a copy of the book running in JupyterLite (https://jupyterlite.readthedocs.io/en/stable/) by clicking the try lite badge at the top of this readme or navigating to: https://dsavransky.github.io/astrodynamicsbook. Note that this is pretty experimental and some things will very likely not work as well as they should.  In particular, on multiple browsers tested, pages have failed to render until you scroll down a little bit.  JupyterLite has persistent storage via your browser, meaning that any changes to the notebooks you make in one session will remain when loading the same notebook in the same browser on the same machine.  If you would like to discard your changes, you will need to delete any cached site data.  Refer to your browser's documentation for how to do so.  On Chrome, you can most easily do this by clicking the site settings button next to the URL and selecting Cookies and site data>Manage on-device site data and then clicking the little trash icon.  On Firefox, you can click the lock icon next to the URL and select Clear cookies and site data.
 
 ### The Easy Way
 
 Click the 'launch binder' badge at the top of this readme and wait a few minutes (it will take a while).  Once JupyterLab launches, click on the file browser (top icon in the left-hand panel) and select a notebook (I'd recommend starting from 01-Introduction.ipynb).  Pages will take a few seconds to fully render - if you see a bunch of garbage-looking code, just wait a bit and it will eventually turn into pretty equations.
+
+Note that, unfortunately, mybinder has fairly limited capacity, meaning that sometimes, the book simply won't launch when going this route.  Sometimes it works great, though.  Kind of luck of the draw at this point. 
 
 ### The Hard Way
 
