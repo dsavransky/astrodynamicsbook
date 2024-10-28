@@ -5,7 +5,7 @@
 [lite-badge]: https://jupyterlite.rtfd.io/en/latest/_static/badge.svg
 [lite]: https://dsavransky.github.io/astrodynamicsbook
 
-More description coming as soon as I figure out what this is going to be.  
+More description coming as soon as I figure out what this is going to be.  Update (10/26/2024): This project is not dead.  It is merely sleeping.  Pining for the fjords.  Something.  But definitely not dead.  Just lightly dormant until I find time to write some more, which I very much wish to do. If people start pointing out mistakes in what I've written already, I think that would give me the impetus to pay attention.  
 
 ## Reading the Book
 
