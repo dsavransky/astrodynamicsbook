@@ -8,3 +8,4 @@ ipynbname
 ipympl
 tqdm
 keplertools
+sympyhelpers>=1.3.0

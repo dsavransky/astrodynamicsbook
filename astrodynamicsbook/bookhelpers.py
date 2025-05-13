@@ -1,7 +1,7 @@
 from IPython.display import display, Markdown
 import importlib.resources
-import sympy
-from sympy import (
+import sympy  # noqa: F401
+from sympy import (  # noqa: F401
     symbols,
     Matrix,
     init_printing,
@@ -12,6 +12,10 @@ from sympy import (
     cos,
     sin,
     tan,
+    asin,
+    acos,
+    atan,
+    atan2,
     eye,
     pi,
     Function,
@@ -21,11 +25,22 @@ from sympy import (
     sinh,
     tanh,
 )
+from sympyhelpers.sympyhelpers import (  # noqa: F401
+    mat2vec,
+    genRefFrame,
+    skew,
+    fancyMat,
+    rotMat,
+    rodriguesEq,
+    difftotal,
+    difftotalmat,
+)
 import re
 import os
 import glob
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.pyplot as plt  # noqa: F401
+import numpy as np  # noqa: F401
+
 # ipynbname won't work on jupyterlite anyway, so won't bother installing it
 try:
     import ipynbname
@@ -67,229 +82,3 @@ def genPrevLink():
     prevfile = glob.glob(os.path.join(tmp[0], f"{prevnum:02}" + "*"))
     if prevfile:
         display(Markdown(r"# [Previous](<{}>)".format(os.path.split(prevfile[0])[1])))
-
-
-def mat2vec(mat, basis="e"):
-    r"""Transform matrix representation of a vector to the vector equation
-    for a given basis.
-
-    Args:
-        mat (sympy.Matrix)
-            3-element column matrix representing the components of a geometric vector
-        basis (str or iterable of strings of length 3)
-            If basis is a string, it is used to generate a standard basis-like notation.
-            For example, the default (basis = 'e') results in a basis set of:
-            '\mathbf{\hat{e}}_1, \mathbf{\hat{e}}_2, \mathbf{\hat{e}}_3'
-            If basis is an iterable, then the contents are used exactly to represent the
-            basis vectors.
-
-    Returns:
-        sympy.Add:
-            The full vector in the specified basis (reference frame).
-
-    """
-
-    assert isinstance(basis, str) or (
-        hasattr(basis, "__iter__") and len(basis) == 3
-    ), "basis input must be a string or iterable of length 3."
-
-    if isinstance(basis, str):
-        basis = [r"\mathbf{\hat{" + basis + "}}_" + str(j) for j in range(1, 4)]
-
-    basissyms = symbols(basis)
-    basisvec = Matrix(basissyms)
-
-    vec = (mat.T * basisvec)[0]
-
-    return collect(vec, basissyms)
-
-
-def genRefFrame(basis):
-    r"""Generate symbols corresponding to unit vectors of a reference frame
-
-    Args:
-        basis (str)
-            Common character of unit vectors.
-            For example, basis = 'e' results in a basis set of:
-            '\mathbf{\hat{e}}_1, \mathbf{\hat{e}}_2, \mathbf{\hat{e}}_3'
-
-    Returns:
-        sympy.Symbol
-
-    """
-
-    basis = [r"\mathbf{\hat{" + basis + "}}_" + str(j) for j in range(1, 4)]
-    return symbols(basis)
-
-
-def skew(v):
-    """Skew-symmetric (cross-produce equivalent) matrix of a geometric vector
-
-    Args:
-        v (iterable of length 3):
-            Component (column matrix) representation of a geoemtric vector.
-
-    Returns:
-        sympy.Matrix:
-            The skew-symmetric (3x3) matrix.
-
-    """
-
-    assert (
-        hasattr(v, "__iter__")
-        or isinstance(v, Matrix)
-        or isinstance(v, sympy.MatrixBase)
-    ) and len(v) == 3, "v must be an iterable of length 3."
-
-    return Matrix([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
-
-
-def fancyMat(prefix, shape):
-    r"""Create an indexed matrix using the given prefix
-    Simillar to symarray, but indexing is 1-based and the matrix must be 2D
-
-    Args:
-        prefix (str):
-            Name of each matrix element
-        shape (iterable of length 2):
-            Number of matrix rows and columns.
-
-    Returns:
-        sympy.Matrix:
-            The resulting (3x3) matrix.
-
-
-    Notes:
-        Indexing is 1-based.
-
-
-    Example:
-        fancyMat('{}^\mathcal{B}C^{\mathcal{A}}',(3,3))
-    """
-
-    M = []
-    for r in range(1, shape[0] + 1):
-        row = []
-        for c in range(1, shape[1] + 1):
-            row.append(prefix + "_{" + str(r) + str(c) + "}")
-        M.append(row)
-    M = Matrix(symbols(M))
-
-    return M
-
-
-def rotMat(axis, angle):
-    """Returns the DCM ({}^B C^A) for a frame rotation of angle about
-    the specified axis
-
-    Args:
-        axis (int):
-            Axis to rotate about (1, 2, or 3)
-        angle (float or sympy.Symbol):
-            Angle of rotation
-
-    Returns:
-        sympy.Matrix:
-            The resulting (3x3) matrix.
-
-    """
-    if axis == 1:
-        return Matrix(
-            ([1, 0, 0], [0, cos(angle), sin(angle)], [0, -sin(angle), cos(angle)])
-        )
-    elif axis == 2:
-        return Matrix(
-            ([cos(angle), 0, -sin(angle)], [0, 1, 0], [sin(angle), 0, cos(angle)])
-        )
-    elif axis == 3:
-        return Matrix(
-            ([cos(angle), sin(angle), 0], [-sin(angle), cos(angle), 0], [0, 0, 1])
-        )
-    else:
-        return -1
-
-
-def rodriguesEq(nhat, th):
-    """Returns the DCM ({}^B C^A) for a frame rotation of angle th about
-    the axis nhat
-
-    Args:
-        nhat (sympy.Matrix):
-            Axis of rotation in components of either frame (3x1)
-        angle (float or sympy.Symbol):
-            Angle of rotation
-
-    Returns:
-        sympy.Matrix:
-            The resulting (3x3) matrix.
-    """
-
-    bCa = simplify(
-        cos(th) * eye(3)
-        + (1 - cos(th)) * nhat * nhat.transpose()
-        - sin(th) * skew(nhat)
-    )
-
-    return bCa
-
-
-def difftotal(expr, diffby, diffmap):
-    """Take the total derivative with respect to a variable.
-
-    Args:
-        expr (sympy.core.*):
-            The expression to differentiate
-        diffby (symbol):
-            The variable to differentiate with respect to
-        diffmap (dict):
-            Dictionary of variable derivatives of the form {var:deriv,...}
-
-    Returns:
-        sympy.core.*:
-            The resulting derivative expression
-
-    Example:
-
-        theta, t, theta_dot = symbols("theta t theta_dot")
-        difftotal(cos(theta), t, {theta: theta_dot})
-        >> -theta_dot*sin(theta)
-
-    Notes:
-        Based almost entirely on the original code by  by Chris Wagner at:
-        http://robotfantastic.org/total-derivatives-in-sympy.html
-
-    """
-    # Replace all symbols in the diffmap by a functional form
-    fnexpr = expr.subs({s: Function(str(s))(diffby) for s in diffmap})
-    # Do the differentiation
-    diffexpr = diff(fnexpr, diffby)
-    # Replace the Derivatives with the variables in diffmap
-    derivmap = {
-        Derivative(Function(str(v))(diffby), diffby): dv for v, dv in diffmap.items()
-    }
-    finaldiff = diffexpr.subs(derivmap)
-    # Replace the functional forms with their original form
-    return finaldiff.subs({Function(str(s))(diffby): s for s in diffmap})
-
-
-def difftotalmat(mat, diffby, diffmap):
-    """Take the total derivative with respect to a variable of a matrix.
-
-    Args:
-        mat (sympy.Matrix):
-            The matrix to differentiate
-        diffby (symbol):
-            The variable to differentiate with respect to
-        diffmap (dict):
-            Dictionary of variable derivatives of the form {var:deriv,...}
-
-    Returns:
-        sympy.Matrix:
-            The resulting derivative expression
-
-    Notes:
-        Applies method diftotal element by element to the input matrix.
-
-    """
-
-    return Matrix([difftotal(x, diffby, diffmap) for x in mat]).reshape(*mat.shape)
