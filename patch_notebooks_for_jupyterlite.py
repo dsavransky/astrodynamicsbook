@@ -27,33 +27,25 @@ def main():
 
         # find cell with genPrevLink
         prevcell = None
-        for c in ntbk.cells:
+        for jj, c in enumerate(ntbk.cells):
             if "genPrevLink()" in c.source:
                 prevcell = c
                 break
         if prevcell is not None:
-            prevcell.source = (
-                "# Do NOT run this cell in jupyterlite - it will produce an error.\n"
-                f"{prevcell.source}"
+            ntbk.cells[jj] = nbf.v4.new_markdown_cell(
+                prevcell["outputs"][0]["data"]["text/markdown"]
             )
-            prevcell["metadata"]["tags"] = [
-                "hide-input",
-            ]
 
         # find cell with genNextLink
         nextcell = None
-        for c in ntbk.cells:
+        for kk, c in enumerate(ntbk.cells):
             if "genNextLink()" in c.source:
                 nextcell = c
                 break
         if nextcell is not None:
-            nextcell.source = (
-                "# Do NOT run this cell in jupyterlite - it will produce an error.\n"
-                f"{nextcell.source}"
+            ntbk.cells[kk] = nbf.v4.new_markdown_cell(
+                nextcell["outputs"][0]["data"]["text/markdown"]
             )
-            nextcell["metadata"]["tags"] = [
-                "hide-input",
-            ]
 
         # write output
         nbf.write(ntbk, nb)
