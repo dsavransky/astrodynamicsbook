@@ -11,6 +11,7 @@ def main():
         "# This preamble must be executed when running in jupyterlite \n"
         "import IPython.display\nimport importlib.resources\nimport sympy\n"
         "import re\nimport os\nimport glob\nimport matplotlib.pyplot \nimport numpy"
+        " \n%pip install -q sympyhelpers"
     )
 
     newcell = nbf.v4.new_code_cell(source=newtxt)
