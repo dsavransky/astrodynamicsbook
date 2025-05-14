@@ -36,6 +36,9 @@ def main():
                 "# Do NOT run this cell in jupyterlite - it will produce an error.\n"
                 f"{prevcell.source}"
             )
+            prevcell["metadata"]["tags"] = [
+                "hide-input",
+            ]
 
         # find cell with genNextLink
         nextcell = None
@@ -48,6 +51,9 @@ def main():
                 "# Do NOT run this cell in jupyterlite - it will produce an error.\n"
                 f"{nextcell.source}"
             )
+            nextcell["metadata"]["tags"] = [
+                "hide-input",
+            ]
 
         # write output
         nbf.write(ntbk, nb)
