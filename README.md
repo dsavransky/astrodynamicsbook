@@ -18,6 +18,7 @@ You can access a copy of the book running in JupyterLite (https://jupyterlite.re
 * On multiple browsers tested, pages have failed to render until you scroll down a little bit.
 * JupyterLite has persistent storage via your browser, meaning that any changes to the notebooks you make in one session will remain when loading the same notebook in the same browser on the same machine.  If you would like to discard your changes, you will need to delete any cached site data.  Refer to your browser's documentation for how to do so.  On Chrome, you can most easily do this by clicking the site settings button next to the URL and selecting Cookies and site data>Manage on-device site data and then clicking the little trash icon.  On Firefox, you can click the lock icon next to the URL and select Clear cookies and site data.
 * Section headings will not automatically populate when you load a notebook.  They will, however, populate if you select 'Run all cells' from the Run menu.
+* Similarly, animations will not automatically render on loading.  They will also work if you 'Run all cells' from the Run menu.
 * Occassionally, LaTeX macros will not render properly in notebooks.  There doesn't seem to be a consistent pattern to this, and it sometimes affects only a subset of markdown cells in a single notebook.  If you click into the cell, modify the contents in any way (e.g., add a space somewhere) and then re-render the cell, the issue resovles. 
 
 ### The Easy Way
