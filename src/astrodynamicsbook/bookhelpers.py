@@ -1,4 +1,4 @@
-from IPython.display import display, Markdown
+from IPython.display import display, Markdown, HTML
 import importlib.resources
 import sympy  # noqa: F401
 from sympy import (  # noqa: F401
@@ -38,8 +38,10 @@ from sympyhelpers.sympyhelpers import (  # noqa: F401
 import re
 import os
 import glob
-import matplotlib.pyplot as plt  # noqa: F401
+import matplotlib.pyplot as plt
+from matplotlib import animation
 import numpy as np  # noqa: F401
+from angutils import angutils
 
 # ipynbname won't work on jupyterlite anyway, so won't bother installing it
 try:
@@ -82,3 +84,39 @@ def genPrevLink():
     prevfile = glob.glob(os.path.join(tmp[0], f"{prevnum:02}" + "*"))
     if prevfile:
         display(Markdown(r"# [Previous](<{}>)".format(os.path.split(prevfile[0])[1])))
+
+
+def animRotSet(rotSet, rotangs, rotsteps=12):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+    (a1,) = ax.plot([0, 1], [0, 0], [0, 0], "r", linewidth=5)
+    (a2,) = ax.plot([0, 0], [0, 1], [0, 0], "g", linewidth=5)
+    (a3,) = ax.plot([0, 0], [0, 0], [0, 1], "b", linewidth=5)
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-1, 1)
+    ax.set_zlim(-1, 1)
+
+    Rs = []
+    currDCM = np.eye(3)
+    for rotax, rotang in zip(rotSet, rotangs):
+        currax = currDCM[:, rotax - 1]
+        Rs.append(angutils.calcDCM(currax, rotang / rotsteps))
+        currDCM = np.matmul(angutils.calcDCM(currax, rotang), currDCM)
+
+    ani = animation.FuncAnimation(
+        fig,
+        animateRotations,
+        frames=len(rotSet) * rotsteps + 1,
+        fargs=(Rs, [a1, a2, a3], rotsteps),
+    )
+    plt.close(fig)
+    display(HTML(ani.to_jshtml()))
+
+
+def animateRotations(i, Rs, axs, rotsteps):
+    if i == 0:
+        return None
+
+    R = Rs[np.digitize(i, np.arange(len(Rs)) * rotsteps + 1) - 1]
+    for a in axs:
+        a.set_data_3d(np.matmul(R, np.vstack(a.get_data_3d())))

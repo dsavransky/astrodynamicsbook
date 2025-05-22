@@ -24,7 +24,7 @@ jobs:
           python patch_notebooks_for_jupyterlite.py
       - name: Build the JupyterLite site
         run: |
-          cp -a astrodynamicsbook Notebooks
+          cp -a src/astrodynamicsbook Notebooks
           jupyter lite build --contents Notebooks --output-dir dist
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
