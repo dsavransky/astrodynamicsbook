@@ -86,37 +86,123 @@ def genPrevLink():
         display(Markdown(r"# [Previous](<{}>)".format(os.path.split(prevfile[0])[1])))
 
 
-def animRotSet(rotSet, rotangs, rotsteps=12):
+def animRotSet(rotSet, rotangs, rotsteps=12, body=True):
+    """Calling method for generating animation of an ordered set of rotations."""
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
+    fig.tight_layout()
     (a1,) = ax.plot([0, 1], [0, 0], [0, 0], "r", linewidth=5)
     (a2,) = ax.plot([0, 0], [0, 1], [0, 0], "g", linewidth=5)
     (a3,) = ax.plot([0, 0], [0, 0], [0, 1], "b", linewidth=5)
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
     ax.set_zlim(-1, 1)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
 
     Rs = []
     currDCM = np.eye(3)
     for rotax, rotang in zip(rotSet, rotangs):
-        currax = currDCM[:, rotax - 1]
-        Rs.append(angutils.calcDCM(currax, rotang / rotsteps))
-        currDCM = np.matmul(angutils.calcDCM(currax, rotang), currDCM)
+        if body:
+            currax = currDCM[:, rotax - 1]
+            Rs.append(angutils.calcDCM(currax, rotang / rotsteps))
+            currDCM = np.matmul(angutils.calcDCM(currax, rotang), currDCM)
+        else:
+            Rs.append(angutils.rotMat(rotax, -rotang / rotsteps))
 
     ani = animation.FuncAnimation(
         fig,
         animateRotations,
         frames=len(rotSet) * rotsteps + 1,
         fargs=(Rs, [a1, a2, a3], rotsteps),
+        interval=100,
     )
     plt.close(fig)
-    display(HTML(ani.to_jshtml()))
+    display(HTML(ani.to_jshtml(default_mode="once")))
 
 
 def animateRotations(i, Rs, axs, rotsteps):
+    """Animation function for animating ordered set of rotations"""
+
     if i == 0:
         return None
 
     R = Rs[np.digitize(i, np.arange(len(Rs)) * rotsteps + 1) - 1]
     for a in axs:
         a.set_data_3d(np.matmul(R, np.vstack(a.get_data_3d())))
+
+
+def animEulerAngsAndAxis(rotSet, rotangs, rotsteps=12, body=True):
+    """Calling method for generating animation of an Euler Angle set and the equivalent
+    rotation about the Euler axis."""
+
+    # set up figure with two subplots and generate axes
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121, projection="3d")
+    ax2 = fig.add_subplot(122, projection="3d")
+    fig.tight_layout()
+
+    tmp = []
+    for ax in [ax1, ax2]:
+        (a1,) = ax.plot([0, 1], [0, 0], [0, 0], "r", linewidth=5)
+        (a2,) = ax.plot([0, 0], [0, 1], [0, 0], "g", linewidth=5)
+        (a3,) = ax.plot([0, 0], [0, 0], [0, 1], "b", linewidth=5)
+        tmp.append([a1, a2, a3])
+        ax.set_xlim(-1, 1)
+        ax.set_ylim(-1, 1)
+        ax.set_zlim(-1, 1)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_zticks([])
+
+    axs1, axs2 = tmp
+
+    # compute Euler axis and angle and associated rotation matrix
+    DCM = angutils.EulerAng2DCM(rotSet, rotangs, body=body)
+    n, th = angutils.DCM2axang(DCM)
+    Rea = angutils.calcDCM(n, -th / rotsteps / 3)
+
+    # add Euler axis to second plot
+    ax2.plot(
+        np.array([-1, 1]) * n[0],
+        np.array([-1, 1]) * n[1],
+        np.array([-1, 1]) * n[2],
+        "k--",
+    )
+
+    Rs = []
+    currDCM = np.eye(3)
+    for rotax, rotang in zip(rotSet, rotangs):
+        if body:
+            currax = currDCM[:, rotax - 1]
+            Rs.append(angutils.calcDCM(currax, rotang / rotsteps))
+            currDCM = np.matmul(angutils.calcDCM(currax, rotang), currDCM)
+        else:
+            Rs.append(angutils.rotMat(rotax, -rotang / rotsteps))
+
+    ani = animation.FuncAnimation(
+        fig,
+        animateEulerRotations,
+        frames=len(rotSet) * rotsteps + 1,
+        fargs=(Rs, Rea, axs1, axs2, rotsteps),
+        interval=100,
+    )
+    plt.close(fig)
+    display(HTML(ani.to_jshtml(default_mode="once")))
+
+
+def animateEulerRotations(i, Rs, Rea, axs1, axs2, rotsteps):
+    """Animation function for comparing an Euler Angle set and the equivalent
+    rotation about the Euler axis."""
+
+    if i == 0:
+        return None
+
+    R = Rs[np.digitize(i, np.arange(len(Rs)) * rotsteps + 1) - 1]
+    for a in axs1:
+        a.set_data_3d(np.matmul(R, np.vstack(a.get_data_3d())))
+
+    for a in axs2:
+        a.set_data_3d(np.matmul(Rea, np.vstack(a.get_data_3d())))
